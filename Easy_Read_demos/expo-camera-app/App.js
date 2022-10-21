@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { Camera } from "expo-camera";
-import { shareAsync } from "expo-sharing";
+// import { shareAsync } from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 
 export default function App() {
