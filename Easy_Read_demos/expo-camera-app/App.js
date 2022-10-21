@@ -9,7 +9,6 @@ import {
 } from "react-native";
 import { useEffect, useRef, useState } from "react";
 import { Camera } from "expo-camera";
-// import { shareAsync } from "expo-sharing";
 import * as MediaLibrary from "expo-media-library";
 
 export default function App() {
@@ -17,6 +16,7 @@ export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState();
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
   const [photo, setPhoto] = useState();
+  const [serverRply, setServerRply] = useState();
 
   useEffect(() => {
     (async () => {
@@ -50,16 +50,34 @@ export default function App() {
   };
 
   if (photo) {
-    // let sharePic = () => {
-    //   shareAsync(photo.uri).then(() => {
-    //     setPhoto(undefined);
-    //   });
-    // };
-
     let savePhoto = () => {
       MediaLibrary.saveToLibraryAsync(photo.uri).then(() => {
         setPhoto(undefined);
       });
+    };
+
+    let postJsonData = () => {
+      fetch("http://192.168.0.103:8080/SendImage", {
+        //server ip
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          something: "hi",
+          something_else: "hey",
+        }),
+      })
+        .then((response) => response.json())
+        .then((responseJson) => {
+          console.log(responseJson);
+          setServerRply(responseJson);
+        })
+        .catch((error) => {
+          console.error(error);
+        })
+        .finally(() => setPhoto(undefined));
     };
 
     return (
@@ -68,7 +86,7 @@ export default function App() {
           style={styles.preview}
           source={{ uri: "data:image/jpg;base64," + photo.base64 }}
         />
-        {/* <Button title="Share" onPress={sharePic} /> */}
+        <Button title="Send" onPress={postJsonData} />
         {hasMediaLibraryPermission ? (
           <Button title="Save" onPress={savePhoto} />
         ) : undefined}
@@ -77,13 +95,30 @@ export default function App() {
     );
   }
 
-  return (
-    <Camera style={styles.container} ref={cameraRef}>
-      <View style={styles.buttonContainer}>
-        <Button title="Take pic" onPress={takePic} />
+  if (serverRply) {
+    let goBack = () => {
+      setServerRply(undefined);
+    };
+
+    return (
+      <View style={styles.container}>
+        <Text styles={{ margine: 10, fontSize: 16 }}>
+          hello fetch request succesful
+        </Text>
+        <Button title="Back" onPress={goBack} />
       </View>
-      <StatusBar style="auto" />
-    </Camera>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Camera style={styles.camContainer} ref={cameraRef}>
+        <View style={styles.buttonContainer}>
+          <Button title="Take pic" onPress={takePic} />
+        </View>
+        <StatusBar style="auto" />
+      </Camera>
+    </View>
   );
 }
 
@@ -94,12 +129,18 @@ const styles = StyleSheet.create({
     alighItems: "center",
     justifyContent: "center",
   },
+  camContainer: {
+    flex: 0.75,
+    backgroundColor: "#fff",
+    alighItems: "center",
+    justifyContent: "center",
+  },
   buttonContainer: {
     backgroundColor: "#fff",
     alignSelf: "flex-end",
   },
   preview: {
-    alignSelf: "stretch",
+    // alignSelf: "stretch",
     flex: 1,
   },
 });
