@@ -5,6 +5,9 @@ import logging
 import numpy as np
 from PIL import Image
 
+import pytesseract
+import cv2
+
 from flask import Flask, request, abort, jsonify
 
 app = Flask(__name__)
@@ -27,8 +30,14 @@ def returner():
     img_arr = np.asarray(img)      
     print('img shape', img_arr.shape)
 
-    # process your img_arr
+    # process OCR with tesseract
+    myconfig = r"--psm 6 --oem 3"
+    text = pytesseract.image_to_string(img,config=myconfig)
+    print(text)
 
+    # process TTS
+
+    
     return jsonify({'Response': 'Success'})
 
 
