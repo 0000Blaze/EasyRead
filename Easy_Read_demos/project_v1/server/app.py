@@ -1,15 +1,35 @@
+import io
+import json
+import base64
+import logging
+import numpy as np
+from PIL import Image
+
 from flask import Flask, request, abort, jsonify
 
 app = Flask(__name__)
+app.logger.setLevel(logging.DEBUG)
 
 @app.route('/SendImage', methods=['POST'])
 
 def returner():
-    # if not request.json :
-    #     abort(400)
-    print(request.json)
+    # print(request.json)
 
-    return jsonify({'Response': 'hello'})
+    if not request.json or 'image' not in request.json: 
+        abort(400)
+    # get the base64 encoded string
+    im_b64 = request.json['image']
+    # convert it into bytes  
+    img_bytes = base64.b64decode(im_b64.encode('utf-8'))
+    # convert bytes data to PIL Image object
+    img = Image.open(io.BytesIO(img_bytes))
+    # PIL image object to numpy array
+    img_arr = np.asarray(img)      
+    print('img shape', img_arr.shape)
+
+    # process your img_arr
+
+    return jsonify({'Response': 'Success'})
 
 
 if __name__ == '__main__':
