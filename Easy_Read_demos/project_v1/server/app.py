@@ -35,8 +35,20 @@ def returner():
 
     # process TTS
     
-    print("Success OCR")
-    return jsonify({'Response': text})
+    #dummy audio return
+    audioFilepath = "response.wav"
+    with open(audioFilepath,'rb') as f:
+        audio_encoded = base64.b64encode(f.read())
+    
+    data ={
+        "content": str(audio_encoded),
+        "sampleRate" : 8000,
+        "encoding":"FLAC",
+        "languageCode":"en-US",
+    }
+
+    return jsonify(data)
+    # return jsonify({'Response': text})
 
 
 if __name__ == '__main__':
