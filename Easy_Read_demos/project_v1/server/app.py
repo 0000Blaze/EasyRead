@@ -1,12 +1,10 @@
 import io
-import json
 import base64
 import logging
-import numpy as np
+# import numpy as np
 from PIL import Image
 
 import pytesseract
-import cv2
 
 from flask import Flask, request, abort, jsonify
 
@@ -27,18 +25,18 @@ def returner():
     # convert bytes data to PIL Image object
     img = Image.open(io.BytesIO(img_bytes))
     # PIL image object to numpy array
-    img_arr = np.asarray(img)      
-    print('img shape', img_arr.shape)
+    # img_arr = np.asarray(img)      
+    # print('img shape', img_arr.shape)
 
     # process OCR with tesseract
     myconfig = r"--psm 6 --oem 3"
     text = pytesseract.image_to_string(img,config=myconfig)
-    print(text)
+    # print(text)
 
     # process TTS
-
     
-    return jsonify({'Response': 'Success'})
+    print("Success OCR")
+    return jsonify({'Response': text})
 
 
 if __name__ == '__main__':
