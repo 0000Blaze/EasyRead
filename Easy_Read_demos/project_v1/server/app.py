@@ -7,6 +7,7 @@ from PIL import Image
 import pytesseract
 
 from flask import Flask, request, abort, jsonify
+# from flask_ngrok import run_with_ngrok
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -47,6 +48,7 @@ def returner():
         "languageCode":"en-US",
     }
 
+    print("Successful")
     return jsonify(data)
     # return jsonify({'Response': text})
 
