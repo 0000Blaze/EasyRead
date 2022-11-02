@@ -10,31 +10,43 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
+import { Audio } from "expo-av";
+import { Buffer } from "buffer";
 
 export default function App() {
   let cameraRef = useRef();
   const [hasCameraPermission, setHasCameraPermission] = useState();
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
+  const [hasSoundPermission, setHasSoundPermission] = useState();
   const [photo, setPhoto] = useState();
   const [serverRply, setServerRply] = useState();
   const [encodedImage, setEncodedImage] = useState();
+  const [encodedAudio, setEncodedAudio] = useState();
 
   useEffect(() => {
     (async () => {
       const cameraPermission = await Camera.requestCameraPermissionsAsync();
       const mediaLibraryPermission =
         await MediaLibrary.requestPermissionsAsync();
+      const soundPermission = await Audio.requestPermissionsAsync();
       setHasCameraPermission(cameraPermission.status === "granted");
       setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
+      setHasSoundPermission(soundPermission.status === "granted");
     })();
   }, []);
 
-  if (hasCameraPermission === undefined) {
+  if (hasCameraPermission === undefined || hasSoundPermission === undefined) {
     return <Text>Requesting permission...</Text>;
   } else if (!hasCameraPermission) {
     return (
       <Text>
         Permission for Camera not granted.Please change this in settings
+      </Text>
+    );
+  } else if (!hasSoundPermission) {
+    return (
+      <Text>
+        Permission for Sound not granted.Please change this in settings
       </Text>
     );
   }
@@ -60,7 +72,7 @@ export default function App() {
     };
 
     let postJsonData = () => {
-      fetch("https://7859-110-44-126-74.in.ngrok.io/SendImage", {
+      fetch("https://f150-116-90-225-82.in.ngrok.io/SendImage", {
         // fetch("https://boredapi.com/api/activity", {
         //server ip
         method: "POST",
@@ -69,7 +81,7 @@ export default function App() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          // something: "hi",
+          something: "hi",
           // something_else: "hey",
           image: encodedImage,
         }),
@@ -79,6 +91,7 @@ export default function App() {
           // console.log(responseJson);
           // console.log(encodedImage);
           setEncodedImage(undefined);
+          setEncodedAudio(responseJson["content"]);
           setServerRply(responseJson);
         })
         .catch((error) => {
@@ -105,6 +118,15 @@ export default function App() {
   if (serverRply) {
     let goBack = () => {
       setServerRply(undefined);
+      setEncodedAudio(undefined);
+    };
+
+    let soundPlay = () => {
+      let blob = Buffer.from(encodedAudio, "base64");
+      // console.log(blob);
+
+      // var snd = new Audio("data:audio/wav;base64," + encodedAudio);
+      // snd.play();
     };
 
     return (
@@ -112,6 +134,7 @@ export default function App() {
         <Text styles={{ margine: 10, fontSize: 16 }}>
           hello fetch request succesful
         </Text>
+        <Button title="Speak" onPress={soundPlay} />
         <Button title="Back" onPress={goBack} />
       </View>
     );
