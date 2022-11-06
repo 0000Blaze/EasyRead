@@ -6,8 +6,8 @@ from PIL import Image
 
 import pytesseract
 
-from flask import Flask, request, abort, jsonify
-# from flask_ngrok import run_with_ngrok
+from flask import Flask, request, abort, jsonify, Response
+#from flask import send_file
 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)
@@ -50,8 +50,17 @@ def returner():
 
     print("Successful")
     return jsonify(data)
-    # return jsonify({'Response': text})
+    #return send_file(audioFilepath, mimetype="audio/wav", as_attachment=True, attachment_filename="response.wav")
 
+@app.route("/wav")
+def streamwav():
+    def generate():
+        with open("response.wav", "rb") as fwav:
+            data = fwav.read(1024)
+            while data:
+                yield data
+                data = fwav.read(1024)
+    return Response(generate(), mimetype="audio/x-wav")
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
