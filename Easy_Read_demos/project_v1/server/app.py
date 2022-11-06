@@ -37,15 +37,16 @@ def returner():
     # process TTS
     
     #dummy audio return
-    audioFilepath = "response.wav"
-    with open(audioFilepath,'rb') as f:
-        audio_encoded = base64.b64encode(f.read())
+    #audioFilepath = "response.wav"
+    #with open(audioFilepath,'rb') as f:
+    #    audio_encoded = base64.b64encode(f.read())
     
     data ={
-        "content": str(audio_encoded),
-        "sampleRate" : 8000,
-        "encoding":"FLAC",
-        "languageCode":"en-US",
+        #"content": str(audio_encoded),
+        #"sampleRate" : 8000,
+        #"encoding":"FLAC",
+        #"languageCode":"en-US",
+        "content":"Successful,"
     }
 
     print("Successful")
