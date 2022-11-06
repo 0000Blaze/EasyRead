@@ -21,7 +21,6 @@ export default function App() {
   const [photo, setPhoto] = useState();
   const [serverRply, setServerRply] = useState();
   const [encodedImage, setEncodedImage] = useState();
-  const [encodedAudio, setEncodedAudio] = useState();
 
   useEffect(() => {
     (async () => {
@@ -72,7 +71,7 @@ export default function App() {
     };
 
     let postJsonData = () => {
-      fetch("https://f150-116-90-225-82.in.ngrok.io/SendImage", {
+      fetch("https://1909-27-34-16-239.in.ngrok.io/SendImage", {
         // fetch("https://boredapi.com/api/activity", {
         //server ip
         method: "POST",
@@ -91,7 +90,6 @@ export default function App() {
           // console.log(responseJson);
           // console.log(encodedImage);
           setEncodedImage(undefined);
-          setEncodedAudio(responseJson["content"]);
           setServerRply(responseJson);
         })
         .catch((error) => {
@@ -118,16 +116,15 @@ export default function App() {
   if (serverRply) {
     let goBack = () => {
       setServerRply(undefined);
-      setEncodedAudio(undefined);
     };
 
-    let soundPlay = () => {
-      let blob = Buffer.from(encodedAudio, "base64");
-      // console.log(blob);
-
-      // var snd = new Audio("data:audio/wav;base64," + encodedAudio);
-      // snd.play();
-    };
+    async function soundPlay() {
+      console.log("sound button");
+      const { sound: playbackObject } = await Audio.Sound.createAsync(
+        { uri: "https://1909-27-34-16-239.in.ngrok.io/wav" },
+        { shouldPlay: true }
+      );
+    }
 
     return (
       <View style={styles.container}>
