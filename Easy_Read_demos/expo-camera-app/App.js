@@ -6,16 +6,24 @@ import {
   SafeAreaView,
   Button,
   Image,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
 } from "react-native";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { FontAwesome } from "expo-vector-icons";
+// import { shareAsync } from "expo-sharing";
 import { Camera } from "expo-camera";
 import * as MediaLibrary from "expo-media-library";
+import Permissions from "expo-permissions";
 import { Audio } from "expo-av";
-import { Buffer } from "buffer";
 
 export default function App() {
-  let cameraRef = useRef();
-  const [hasCameraPermission, setHasCameraPermission] = useState();
+  const cameraRef = useRef(null);
+  const [type, settype] = useState(Camera.Constants.Type.back);
+  const [hasCameraPermission, setHasCameraPermission] = useState(null);
+  const [capturedPhoto, setCapturedPhoto] = useState(null);
+  const [open, setopen] = useState(false);
   const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
   const [hasSoundPermission, setHasSoundPermission] = useState();
   const [photo, setPhoto] = useState();
@@ -24,11 +32,11 @@ export default function App() {
 
   useEffect(() => {
     (async () => {
-      const cameraPermission = await Camera.requestCameraPermissionsAsync();
+      const { status } = await Camera.requestCameraPermissionsAsync();
       const mediaLibraryPermission =
         await MediaLibrary.requestPermissionsAsync();
       const soundPermission = await Audio.requestPermissionsAsync();
-      setHasCameraPermission(cameraPermission.status === "granted");
+      setHasCameraPermission(status === "granted");
       setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
       setHasSoundPermission(soundPermission.status === "granted");
     })();
@@ -50,30 +58,24 @@ export default function App() {
     );
   }
 
-  let takePic = async () => {
+  async function takePicture() {
     let options = {
       quality: 1,
       base64: true,
       exif: false,
     };
-
-    let newPhoto = await cameraRef.current.takePictureAsync(options);
-    setPhoto(newPhoto);
-    setEncodedImage(newPhoto["base64"]);
-    // console.log(encodedImage);
-  };
+    let data = await cameraRef.current.takePictureAsync(options);
+    setCapturedPhoto(data["uri"]);
+    setopen(true);
+    setPhoto(data);
+    setEncodedImage(data["base64"]);
+  }
 
   if (photo) {
-    let savePhoto = () => {
-      MediaLibrary.saveToLibraryAsync(photo.uri).then(() => {
-        setPhoto(undefined);
-      });
-    };
-
     let postJsonData = () => {
-      fetch("https://1909-27-34-16-239.in.ngrok.io/SendImage", {
-        // fetch("https://boredapi.com/api/activity", {
-        //server ip
+      console.log("Loading ...");
+      alert("Loading please wait");
+      fetch("https://bdfb-27-34-16-232.in.ngrok.io/SendImage", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -81,34 +83,56 @@ export default function App() {
         },
         body: JSON.stringify({
           something: "hi",
-          // something_else: "hey",
           image: encodedImage,
         }),
       })
         .then((response) => response.json())
         .then((responseJson) => {
-          // console.log(responseJson);
-          // console.log(encodedImage);
           setEncodedImage(undefined);
           setServerRply(responseJson);
+          alert("Request succesful");
         })
         .catch((error) => {
           console.error(error);
+          alert("Error occured try again");
         })
         .finally(() => setPhoto(undefined));
     };
 
     return (
       <SafeAreaView style={styles.container}>
-        <Image
-          style={styles.preview}
-          source={{ uri: "data:image/jpg;base64," + photo.base64 }}
-        />
-        <Button title="Send" onPress={postJsonData} />
-        {hasMediaLibraryPermission ? (
-          <Button title="Save" onPress={savePhoto} />
-        ) : undefined}
-        <Button title="Discard" onPress={() => setPhoto(undefined)} />
+        {capturedPhoto && (
+          <Modal animationType="slide" transparent={false} visible={open}>
+            <View
+              style={{
+                flex: 1,
+                justifyContent: "center",
+                alignItems: "center",
+                margin: 20,
+              }}
+            >
+              <Image
+                style={{ width: "100%", height: 500, borderRadius: 20 }}
+                source={{ uri: "data:image/jpg;base64," + photo.base64 }}
+              />
+              <View style={{ margin: 10, flexDirection: "row" }}>
+                <TouchableOpacity
+                  style={{ margin: 10 }}
+                  onPress={() => {
+                    setopen(false);
+                    setPhoto(undefined);
+                  }}
+                >
+                  <FontAwesome name="window-close" size={50} color="FF0000" />
+                </TouchableOpacity>
+
+                <TouchableOpacity style={{ margin: 10 }} onPress={postJsonData}>
+                  <FontAwesome name="upload" size={50} color="121212" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        )}
       </SafeAreaView>
     );
   }
@@ -116,21 +140,18 @@ export default function App() {
   if (serverRply) {
     let goBack = () => {
       setServerRply(undefined);
+      setopen(false);
     };
 
     async function soundPlay() {
-      console.log("sound button");
       const { sound: playbackObject } = await Audio.Sound.createAsync(
-        { uri: "https://1909-27-34-16-239.in.ngrok.io/wav" },
+        { uri: "https://bdfb-27-34-16-232.in.ngrok.io/wav" },
         { shouldPlay: true }
       );
     }
 
     return (
       <View style={styles.container}>
-        <Text styles={{ margine: 10, fontSize: 16 }}>
-          hello fetch request succesful
-        </Text>
         <Button title="Speak" onPress={soundPlay} />
         <Button title="Back" onPress={goBack} />
       </View>
@@ -138,22 +159,55 @@ export default function App() {
   }
 
   return (
-    <View style={styles.container}>
-      <Camera style={styles.camContainer} ref={cameraRef}>
-        <View style={styles.buttonContainer}>
-          <Button title="Take pic" onPress={takePic} />
+    <SafeAreaView style={styles.container}>
+      <Camera style={{ flex: 1 }} type={type} ref={cameraRef}>
+        <View
+          style={{
+            flex: 1,
+            backgroundColor: "transparent",
+            flexDirection: "row",
+          }}
+        >
+          {/* <TouchableOpacity
+            style={{
+              position: "absolute",
+              bottom: 40,
+              left: 20,
+              backgroundColor: "black",
+              width: 50,
+            }}
+            onPress={() => {
+              settype(
+                type == Camera.Constants.Type.back
+                  ? Camera.Constants.Type.front
+                  : Camera.Constants.Type.back
+              );
+            }}
+          >
+            <Text
+              style={{
+                fontSize: 20,
+                marginBottom: 13,
+                color: "#FFF",
+                position: "absolute",
+              }}
+            >
+              Flip
+            </Text>
+          </TouchableOpacity> */}
         </View>
-        <StatusBar style="auto" />
       </Camera>
-    </View>
+
+      <TouchableOpacity style={styles.button} onPress={takePicture}>
+        <FontAwesome name="camera" size={23} color="#fff" />
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alighItems: "center",
     justifyContent: "center",
   },
   camContainer: {
@@ -162,12 +216,12 @@ const styles = StyleSheet.create({
     alighItems: "center",
     justifyContent: "center",
   },
-  buttonContainer: {
-    backgroundColor: "#fff",
-    alignSelf: "flex-end",
-  },
-  preview: {
-    // alignSelf: "stretch",
-    flex: 1,
+  button: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#121212",
+    margin: 20,
+    borderRadius: 10,
+    height: 50,
   },
 });
