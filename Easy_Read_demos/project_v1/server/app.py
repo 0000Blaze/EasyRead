@@ -3,6 +3,7 @@ import base64
 import logging
 # import numpy as np
 from PIL import Image
+# from tts import textToSpeech
 
 import pytesseract
 
@@ -28,24 +29,18 @@ def returner():
     # PIL image object to numpy array
     # img_arr = np.asarray(img)      
     # print('img shape', img_arr.shape)
-
+    img = img.save("picture.jpg")
     # process OCR with tesseract
-    myconfig = r"--psm 6 --oem 3"
-    text = pytesseract.image_to_string(img,config=myconfig)
+
+    # myconfig = r"--psm 6 --oem 3"
+    # text = pytesseract.image_to_string(img,config=myconfig)
     # print(text)
 
     # process TTS
-    
-    #dummy audio return
-    #audioFilepath = "response.wav"
-    #with open(audioFilepath,'rb') as f:
-    #    audio_encoded = base64.b64encode(f.read())
-    
+    # textToSpeech("Hello from server")
+
+    #response
     data ={
-        #"content": str(audio_encoded),
-        #"sampleRate" : 8000,
-        #"encoding":"FLAC",
-        #"languageCode":"en-US",
         "content":"Successful,"
     }
 
