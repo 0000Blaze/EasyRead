@@ -29,6 +29,8 @@ export default function App() {
   const [photo, setPhoto] = useState();
   const [serverRply, setServerRply] = useState();
   const [encodedImage, setEncodedImage] = useState();
+  const [sound, setSound] = useState();
+  const [statusSound, setStatusSound] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -72,10 +74,18 @@ export default function App() {
   }
 
   if (photo) {
+    async function soundLoad() {
+      console.log("loading Sound");
+      const { sound } = await Audio.Sound.createAsync({
+        uri: "https://a8a4-27-34-16-89.in.ngrok.io/wav",
+      });
+      setSound(sound);
+    }
+
     let postJsonData = () => {
       console.log("Loading ...");
       alert("Loading please wait");
-      fetch("https://bdfb-27-34-16-232.in.ngrok.io/SendImage", {
+      fetch("https://a8a4-27-34-16-89.in.ngrok.io/SendImage", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -90,6 +100,7 @@ export default function App() {
         .then((responseJson) => {
           setEncodedImage(undefined);
           setServerRply(responseJson);
+          soundLoad();
           alert("Request succesful");
         })
         .catch((error) => {
@@ -141,18 +152,29 @@ export default function App() {
     let goBack = () => {
       setServerRply(undefined);
       setopen(false);
+      setSound(undefined);
+      setStatusSound(false);
+      sound.unloadAsync();
     };
 
-    async function soundPlay() {
-      const { sound: playbackObject } = await Audio.Sound.createAsync(
-        { uri: "https://bdfb-27-34-16-232.in.ngrok.io/wav" },
-        { shouldPlay: true }
-      );
+    async function playSound() {
+      console.log("Playing Sound");
+      await sound.playAsync();
+      setStatusSound(true);
     }
+
+    let pauseSound = () => {
+      console.log("Pause Sound");
+      sound.pauseAsync();
+      setStatusSound(false);
+    };
 
     return (
       <View style={styles.container}>
-        <Button title="Speak" onPress={soundPlay} />
+        <Button
+          title={statusSound === false ? "Play" : "Pause"}
+          onPress={statusSound === false ? playSound : pauseSound}
+        />
         <Button title="Back" onPress={goBack} />
       </View>
     );
@@ -167,35 +189,7 @@ export default function App() {
             backgroundColor: "transparent",
             flexDirection: "row",
           }}
-        >
-          {/* <TouchableOpacity
-            style={{
-              position: "absolute",
-              bottom: 40,
-              left: 20,
-              backgroundColor: "black",
-              width: 50,
-            }}
-            onPress={() => {
-              settype(
-                type == Camera.Constants.Type.back
-                  ? Camera.Constants.Type.front
-                  : Camera.Constants.Type.back
-              );
-            }}
-          >
-            <Text
-              style={{
-                fontSize: 20,
-                marginBottom: 13,
-                color: "#FFF",
-                position: "absolute",
-              }}
-            >
-              Flip
-            </Text>
-          </TouchableOpacity> */}
-        </View>
+        ></View>
       </Camera>
 
       <TouchableOpacity style={styles.button} onPress={takePicture}>
