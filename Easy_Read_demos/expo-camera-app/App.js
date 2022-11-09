@@ -1,4 +1,3 @@
-import { StatusBar } from "expo-status-bar";
 import {
   StyleSheet,
   Text,
@@ -8,14 +7,10 @@ import {
   Image,
   TouchableOpacity,
   Modal,
-  ActivityIndicator,
 } from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import { FontAwesome } from "expo-vector-icons";
-// import { shareAsync } from "expo-sharing";
 import { Camera } from "expo-camera";
-import * as MediaLibrary from "expo-media-library";
-import Permissions from "expo-permissions";
 import { Audio } from "expo-av";
 
 export default function App() {
@@ -24,22 +19,19 @@ export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [open, setopen] = useState(false);
-  const [hasMediaLibraryPermission, setHasMediaLibraryPermission] = useState();
   const [hasSoundPermission, setHasSoundPermission] = useState();
   const [photo, setPhoto] = useState();
   const [serverRply, setServerRply] = useState();
   const [encodedImage, setEncodedImage] = useState();
   const [sound, setSound] = useState();
   const [statusSound, setStatusSound] = useState(false);
+  const [soundParameters, setSoundParameters] = useState();
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      const mediaLibraryPermission =
-        await MediaLibrary.requestPermissionsAsync();
       const soundPermission = await Audio.requestPermissionsAsync();
       setHasCameraPermission(status === "granted");
-      setHasMediaLibraryPermission(mediaLibraryPermission.status === "granted");
       setHasSoundPermission(soundPermission.status === "granted");
     })();
   }, []);
@@ -76,23 +68,28 @@ export default function App() {
   if (photo) {
     async function soundLoad() {
       console.log("loading Sound");
-      const { sound } = await Audio.Sound.createAsync({
-        uri: "https://a8a4-27-34-16-89.in.ngrok.io/wav",
-      });
+      const { sound, apple } = await Audio.Sound.createAsync(
+        {
+          uri: "https://250c-27-34-16-89.in.ngrok.io/wav",
+        },
+        { shouldPlay: false },
+        (apple) => setSoundParameters(apple)
+      );
       setSound(sound);
+      // setSoundParameters(apple);
     }
 
     let postJsonData = () => {
       console.log("Loading ...");
       alert("Loading please wait");
-      fetch("https://a8a4-27-34-16-89.in.ngrok.io/SendImage", {
+      fetch("https://250c-27-34-16-89.in.ngrok.io/SendImage", {
         method: "POST",
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          something: "hi",
+          userId: "Rohan",
           image: encodedImage,
         }),
       })
@@ -171,6 +168,10 @@ export default function App() {
 
     return (
       <View style={styles.container}>
+        <Text>
+          {soundParameters.positionMillis / 1000} /{" "}
+          {soundParameters.durationMillis / 1000} seconds
+        </Text>
         <Button
           title={statusSound === false ? "Play" : "Pause"}
           onPress={statusSound === false ? playSound : pauseSound}
