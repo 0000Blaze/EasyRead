@@ -1,29 +1,43 @@
 import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, Button } from "react-native";
+import { StyleSheet, Text, View, Button, TouchableOpacity } from "react-native";
 import { Audio } from "expo-av";
-import * as Sharing from "expo-sharing";
+// import { Constants } from "expo";
+import { useState, useEffect } from "react";
+// import * as Sharing from "expo-sharing";
+
+const source = {
+  uri: "https://a8a4-27-34-16-89.in.ngrok.io/wav",
+};
 
 export default function App() {
-  async function componentDidMount() {
-    Audio.setAudioModeAsync({
-      interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DUCK_OTHERS,
-      shouldDuckAndroid: true,
-      staysActiveInBackground: true,
-    });
-  }
+  const [sound, setSound] = useState();
+  const [status, setStatus] = useState(false);
 
   async function playSound() {
-    console.log("sound button");
-    const { sound: playbackObject } = await Audio.Sound.createAsync(
-      { uri: "https://1909-27-34-16-239.in.ngrok.io/wav" },
-      { shouldPlay: true }
-    );
+    console.log("Loading Sound");
+    const { sound } = await Audio.Sound.createAsync(source);
+    setSound(sound);
+
+    console.log("Playing Sound");
+    await sound.playAsync();
+    setStatus(true);
   }
+
+  let testPause = () => {
+    console.log("Pause Sound");
+    sound.pauseAsync();
+    sound.unloadAsync();
+    setStatus(false);
+  };
 
   return (
     <View style={styles.container}>
-      <Button title="Play Sound" color={"#3CBB"} onPress={() => playSound()} />
-      <StatusBar style="auto" />
+      <Button
+        title={status === false ? "Play" : "Pause"}
+        onPress={status === false ? playSound : testPause}
+      />
+      {/* <Button title="Stop" onPress={testStop} /> */}
+      {/* <Button title="Pause" onPress={testPause} /> */}
     </View>
   );
 }
@@ -34,5 +48,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+  button: {
+    width: 256,
+    height: 256 / 1.618,
+    margin: 5,
+    borderRadius: 10,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+  },
+  buttonText: {
+    textAlign: "center",
+    backgroundColor: "transparent",
   },
 });
