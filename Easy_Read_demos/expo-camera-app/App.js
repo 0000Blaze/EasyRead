@@ -3,11 +3,11 @@ import {
   Text,
   View,
   SafeAreaView,
-  Button,
   Image,
   TouchableOpacity,
   Modal,
 } from "react-native";
+import Slider from "@react-native-community/slider";
 import React, { useEffect, useRef, useState } from "react";
 import { FontAwesome } from "expo-vector-icons";
 import { Camera } from "expo-camera";
@@ -70,29 +70,31 @@ export default function App() {
       console.log("loading Sound");
       const { sound, apple } = await Audio.Sound.createAsync(
         {
-          uri: "https://250c-27-34-16-89.in.ngrok.io/wav",
+          uri: "https://cc46-2400-1a00-b010-4d18-dc70-303b-742d-aede.in.ngrok.io/wav",
         },
         { shouldPlay: false },
         (apple) => setSoundParameters(apple)
       );
       setSound(sound);
-      // setSoundParameters(apple);
     }
 
     let postJsonData = () => {
       console.log("Loading ...");
       alert("Loading please wait");
-      fetch("https://250c-27-34-16-89.in.ngrok.io/SendImage", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "Rohan",
-          image: encodedImage,
-        }),
-      })
+      fetch(
+        "https://cc46-2400-1a00-b010-4d18-dc70-303b-742d-aede.in.ngrok.io/SendImage",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: "Rohan",
+            image: encodedImage,
+          }),
+        }
+      )
         .then((response) => response.json())
         .then((responseJson) => {
           setEncodedImage(undefined);
@@ -167,23 +169,67 @@ export default function App() {
     };
 
     return (
-      <View style={styles.container}>
-        <Text>
-          {soundParameters.positionMillis / 1000} /{" "}
-          {soundParameters.durationMillis / 1000} seconds
-        </Text>
-        <Button
-          title={statusSound === false ? "Play" : "Pause"}
-          onPress={statusSound === false ? playSound : pauseSound}
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+          }}
+        >
+          <Text
+            style={{
+              marginLeft: 10,
+            }}
+          >
+            {Math.floor(soundParameters.positionMillis / 1000 / 3600)}:
+            {Math.floor(soundParameters.positionMillis / 1000 / 60)}:
+            {Math.floor((soundParameters.positionMillis / 1000) % 60)}
+          </Text>
+          <Text
+            style={{
+              marginLeft: 285,
+            }}
+          >
+            {Math.floor(soundParameters.durationMillis / 1000 / 3600)}:
+            {Math.floor(soundParameters.durationMillis / 1000 / 60)}:
+            {Math.floor((soundParameters.durationMillis / 1000) % 60)}
+          </Text>
+        </View>
+        <Slider
+          style={{ width: 400, height: 40 }}
+          minimumValue={0}
+          maximumValue={1}
+          minimumTrackTintColor="#0000FF"
+          maximumTrackTintColor="#000000"
         />
-        <Button title="Back" onPress={goBack} />
+        <TouchableOpacity
+          style={styles.audioButton}
+          onPress={statusSound === false ? playSound : pauseSound}
+        >
+          {statusSound === false ? (
+            <FontAwesome name="play" size={35} color="#FFFF" />
+          ) : (
+            <FontAwesome name="pause" size={35} color="#FFFF" />
+          )}
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.audioButton}
+          title="Back"
+          onPress={goBack}
+        >
+          <FontAwesome name="arrow-left" size={35} color="#FFFF" />
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <Camera style={{ flex: 1 }} type={type} ref={cameraRef}>
+      <Camera style={{ flex: 0.75 }} type={type} ref={cameraRef}>
         <View
           style={{
             flex: 1,
@@ -215,6 +261,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     backgroundColor: "#121212",
+    margin: 20,
+    borderRadius: 10,
+    height: 50,
+  },
+  audioButton: {
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#000",
     margin: 20,
     borderRadius: 10,
     height: 50,
