@@ -82,7 +82,12 @@ export default function App() {
 
     let postJsonData = () => {
       console.log("Loading ...");
-      alert("Loading please wait");
+      Alert.alert(
+        "Loading...",
+        "Image being send to server and waiting for response",
+        [],
+        { cancelable: false }
+      );
       fetch(
         "https://0910-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/SendImage",
         {
@@ -102,11 +107,11 @@ export default function App() {
           setEncodedImage(undefined);
           setServerRply(responseJson);
           soundLoad();
-          alert("Request succesful");
+          Alert.alert("Succesful", "Reply from server succesful");
         })
         .catch((error) => {
           console.error(error);
-          alert("Error occured try again");
+          Alert.alert("Error occured", "Server error , please try again");
         })
         .finally(() => setPhoto(undefined));
     };
@@ -224,7 +229,7 @@ export default function App() {
               pauseSound();
             } catch (err) {
               console.log(err);
-              alert("Audio error occured");
+              Alert.alert("Audio seekbar error", "Try again");
             }
           }}
           onSlidingComplete={(value) => {
