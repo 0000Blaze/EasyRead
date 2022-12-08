@@ -72,7 +72,7 @@ export default function App() {
       console.log("loading Sound");
       const { sound, apple } = await Audio.Sound.createAsync(
         {
-          uri: "https://0910-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/wav",
+          uri: "https://67e7-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/wav",
         },
         { shouldPlay: false },
         (apple) => setSoundParameters(apple)
@@ -89,7 +89,7 @@ export default function App() {
         { cancelable: false }
       );
       fetch(
-        "https://0910-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/SendImage",
+        "https://67e7-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/SendImage",
         {
           method: "POST",
           headers: {

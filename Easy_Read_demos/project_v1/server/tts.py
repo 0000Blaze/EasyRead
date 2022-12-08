@@ -1,9 +1,9 @@
 import gtts
-import playsound
+# import playsound
 
 
 def textToSpeech(sentence):
 	tts = gtts.gTTS(str(sentence))
-	tts.save("hello.wav")
+	tts.save("response.wav")
 
-textToSpeech("Khana khayou.")
+# textToSpeech('''Hi this is response from server. text to speech library has been used''')
