@@ -27,6 +27,7 @@ export default function App() {
   const [sound, setSound] = useState();
   const [statusSound, setStatusSound] = useState(false);
   const [soundParameters, setSoundParameters] = useState();
+  // const [seekValue, setSeekValue] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -71,7 +72,7 @@ export default function App() {
       console.log("loading Sound");
       const { sound, apple } = await Audio.Sound.createAsync(
         {
-          uri: "https://ea3c-27-34-16-8.in.ngrok.io/wav",
+          uri: "https://0910-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/wav",
         },
         { shouldPlay: false },
         (apple) => setSoundParameters(apple)
@@ -82,17 +83,20 @@ export default function App() {
     let postJsonData = () => {
       console.log("Loading ...");
       alert("Loading please wait");
-      fetch("https://ea3c-27-34-16-8.in.ngrok.io/SendImage", {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: "Rohan",
-          image: encodedImage,
-        }),
-      })
+      fetch(
+        "https://0910-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/SendImage",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: "Rohan",
+            image: encodedImage,
+          }),
+        }
+      )
         .then((response) => response.json())
         .then((responseJson) => {
           setEncodedImage(undefined);
@@ -167,6 +171,9 @@ export default function App() {
     };
 
     let calculateSeekbarValue = () => {
+      if (!statusSound) {
+        return 0;
+      }
       return soundParameters.positionMillis / soundParameters.durationMillis;
     };
 
@@ -208,6 +215,9 @@ export default function App() {
           value={calculateSeekbarValue()}
           minimumTrackTintColor="#0000FF"
           maximumTrackTintColor="#000000"
+          onValueChange={() => {
+            calculateSeekbarValue();
+          }}
           onSlidingStart={() => {
             if (!statusSound) return;
             try {
