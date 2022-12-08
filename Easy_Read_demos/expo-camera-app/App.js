@@ -6,6 +6,7 @@ import {
   Image,
   TouchableOpacity,
   Modal,
+  Alert,
 } from "react-native";
 import Slider from "@react-native-community/slider";
 import React, { useEffect, useRef, useState } from "react";
@@ -70,7 +71,7 @@ export default function App() {
       console.log("loading Sound");
       const { sound, apple } = await Audio.Sound.createAsync(
         {
-          uri: "https://cc46-2400-1a00-b010-4d18-dc70-303b-742d-aede.in.ngrok.io/wav",
+          uri: "https://ea3c-27-34-16-8.in.ngrok.io/wav",
         },
         { shouldPlay: false },
         (apple) => setSoundParameters(apple)
@@ -81,20 +82,17 @@ export default function App() {
     let postJsonData = () => {
       console.log("Loading ...");
       alert("Loading please wait");
-      fetch(
-        "https://cc46-2400-1a00-b010-4d18-dc70-303b-742d-aede.in.ngrok.io/SendImage",
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: "Rohan",
-            image: encodedImage,
-          }),
-        }
-      )
+      fetch("https://ea3c-27-34-16-8.in.ngrok.io/SendImage", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: "Rohan",
+          image: encodedImage,
+        }),
+      })
         .then((response) => response.json())
         .then((responseJson) => {
           setEncodedImage(undefined);
@@ -168,6 +166,10 @@ export default function App() {
       setStatusSound(false);
     };
 
+    let calculateSeekbarValue = () => {
+      return soundParameters.positionMillis / soundParameters.durationMillis;
+    };
+
     return (
       <View
         style={{
@@ -203,8 +205,23 @@ export default function App() {
           style={{ width: 400, height: 40 }}
           minimumValue={0}
           maximumValue={1}
+          value={calculateSeekbarValue()}
           minimumTrackTintColor="#0000FF"
           maximumTrackTintColor="#000000"
+          onSlidingStart={() => {
+            if (!statusSound) return;
+            try {
+              pauseSound();
+            } catch (err) {
+              console.log(err);
+              alert("Audio error occured");
+            }
+          }}
+          onSlidingComplete={(value) => {
+            if (sound === undefined) return;
+            sound.setPositionAsync(value * soundParameters.durationMillis);
+            playSound();
+          }}
         />
         <TouchableOpacity
           style={styles.audioButton}
