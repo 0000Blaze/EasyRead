@@ -72,7 +72,7 @@ export default function App() {
       console.log("loading Sound");
       const { sound, apple } = await Audio.Sound.createAsync(
         {
-          uri: "https://67e7-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/wav",
+          uri: "https://easy-read-server.onrender.com/wav",
         },
         { shouldPlay: false },
         (apple) => setSoundParameters(apple)
@@ -88,20 +88,17 @@ export default function App() {
         [],
         { cancelable: false }
       );
-      fetch(
-        "https://67e7-2400-1a00-b010-bcb2-6916-a588-2e7a-8d7.in.ngrok.io/SendImage",
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: "Rohan",
-            image: encodedImage,
-          }),
-        }
-      )
+      fetch("https://easy-read-server.onrender.com/SendImage", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: "Rohan",
+          image: encodedImage,
+        }),
+      })
         .then((response) => response.json())
         .then((responseJson) => {
           setEncodedImage(undefined);
