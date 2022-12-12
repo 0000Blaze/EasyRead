@@ -211,7 +211,7 @@ export default function App() {
           </Text>
         </View>
         <Slider
-          style={{ width: 400, height: 40 }}
+          style={{ width: 300, height: 40 }}
           minimumValue={0}
           maximumValue={1}
           value={calculateSeekbarValue()}
