@@ -73,6 +73,7 @@ export default function App() {
       const { sound, apple } = await Audio.Sound.createAsync(
         {
           uri: "https://easy-read-server.onrender.com/wav",
+          // uri: "https://c305-2400-1a00-b010-5505-b69b-c0e7-c1bf-b298.in.ngrok.io/wav",
         },
         { shouldPlay: false },
         (apple) => setSoundParameters(apple)
@@ -84,11 +85,14 @@ export default function App() {
       console.log("Loading ...");
       Alert.alert(
         "Loading...",
-        "Image being send to server and waiting for response",
+        "Image being sent to server and waiting for response",
         [],
         { cancelable: false }
       );
       fetch("https://easy-read-server.onrender.com/SendImage", {
+        // fetch(
+        //   "https://c305-2400-1a00-b010-5505-b69b-c0e7-c1bf-b298.in.ngrok.io/SendImage",
+        // {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -161,21 +165,27 @@ export default function App() {
     };
 
     async function playSound() {
-      console.log("Playing Sound");
+      // console.log("Playing Sound");
       await sound.playAsync();
       setStatusSound(true);
+      if (soundParameters.positionMillis === soundParameters.durationMillis)
+        sound.replayAsync();
     }
 
     let pauseSound = () => {
-      console.log("Pause Sound");
+      // console.log("Pause Sound");
       sound.pauseAsync();
       setStatusSound(false);
     };
 
     let calculateSeekbarValue = () => {
-      if (!statusSound) {
+      if (sound === undefined) {
+        console.log("No Sound");
         return 0;
       }
+      // console.log(
+      //   soundParameters.positionMillis / soundParameters.durationMillis
+      // );
       return soundParameters.positionMillis / soundParameters.durationMillis;
     };
 
@@ -202,7 +212,7 @@ export default function App() {
           </Text>
           <Text
             style={{
-              marginLeft: 285,
+              marginLeft: 250,
             }}
           >
             {Math.floor(soundParameters.durationMillis / 1000 / 3600)}:
@@ -211,19 +221,20 @@ export default function App() {
           </Text>
         </View>
         <Slider
-          style={{ width: 300, height: 40 }}
+          style={{ width: 350, height: 40 }}
           minimumValue={0}
           maximumValue={1}
           value={calculateSeekbarValue()}
           minimumTrackTintColor="#0000FF"
           maximumTrackTintColor="#000000"
-          onValueChange={() => {
-            calculateSeekbarValue();
-          }}
+          // onValueChange={() => {
+          //   calculateSeekbarValue();
+          // }}
           onSlidingStart={() => {
-            if (!statusSound) return;
+            if (!sound) return;
             try {
               pauseSound();
+              // console.log(soundParameters);
             } catch (err) {
               console.log(err);
               Alert.alert("Audio seekbar error", "Try again");
@@ -231,8 +242,17 @@ export default function App() {
           }}
           onSlidingComplete={(value) => {
             if (sound === undefined) return;
-            sound.setPositionAsync(value * soundParameters.durationMillis);
+            // console.log(
+            //   sound.setPositionAsync(
+            //     Math.floor(value * soundParameters.durationMillis)
+            //   )
+            // );
+            sound.setPositionAsync(
+              Math.floor(value * soundParameters.durationMillis)
+            );
+            // console.log(soundParameters);
             playSound();
+            // console.log(soundParameters);
           }}
         />
         <TouchableOpacity
