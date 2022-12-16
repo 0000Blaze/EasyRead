@@ -27,7 +27,7 @@ export default function App() {
   const [sound, setSound] = useState();
   const [statusSound, setStatusSound] = useState(false);
   const [soundParameters, setSoundParameters] = useState();
-  // const [seekValue, setSeekValue] = useState(0);
+  const [seekValue, setSeekValue] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -75,7 +75,7 @@ export default function App() {
           uri: "https://easy-read-server.onrender.com/wav",
           // uri: "https://c305-2400-1a00-b010-5505-b69b-c0e7-c1bf-b298.in.ngrok.io/wav",
         },
-        { shouldPlay: false },
+        { shouldPlay: false, positionMillis: seekValue },
         (apple) => setSoundParameters(apple)
       );
       setSound(sound);
@@ -242,17 +242,15 @@ export default function App() {
           }}
           onSlidingComplete={(value) => {
             if (sound === undefined) return;
-            // console.log(
-            //   sound.setPositionAsync(
-            //     Math.floor(value * soundParameters.durationMillis)
-            //   )
-            // );
-            sound.setPositionAsync(
-              Math.floor(value * soundParameters.durationMillis)
-            );
-            // console.log(soundParameters);
+            // sound.setStatusAsync({
+            //   positionMillis: Math.floor(
+            //     value * soundParameters.durationMillis
+            //   ),
+            // });
+            setSeekValue(Math.floor(value * soundParameters.durationMillis));
+            console.log(seekValue);
+            sound.setStatusAsync({ positionMillis: seekValue }); //sound.setPositionAsync(seekValue)
             playSound();
-            // console.log(soundParameters);
           }}
         />
         <TouchableOpacity
