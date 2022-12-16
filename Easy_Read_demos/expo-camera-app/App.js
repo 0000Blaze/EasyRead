@@ -75,7 +75,11 @@ export default function App() {
           uri: "https://easy-read-server.onrender.com/wav",
           // uri: "https://c305-2400-1a00-b010-5505-b69b-c0e7-c1bf-b298.in.ngrok.io/wav",
         },
-        { shouldPlay: false, positionMillis: seekValue },
+        {
+          // androidImplementation: "MediaPlayer",
+          shouldPlay: false,
+          positionMillis: seekValue,
+        },
         (apple) => setSoundParameters(apple)
       );
       setSound(sound);
@@ -231,7 +235,7 @@ export default function App() {
           //   calculateSeekbarValue();
           // }}
           onSlidingStart={() => {
-            if (!sound) return;
+            if (!sound.isPlaying) return;
             try {
               pauseSound();
               // console.log(soundParameters);
@@ -240,16 +244,19 @@ export default function App() {
               Alert.alert("Audio seekbar error", "Try again");
             }
           }}
-          onSlidingComplete={(value) => {
+          onSlidingComplete={async (value) => {
             if (sound === undefined) return;
-            // sound.setStatusAsync({
-            //   positionMillis: Math.floor(
-            //     value * soundParameters.durationMillis
-            //   ),
-            // });
             setSeekValue(Math.floor(value * soundParameters.durationMillis));
-            console.log(seekValue);
-            sound.setStatusAsync({ positionMillis: seekValue }); //sound.setPositionAsync(seekValue)
+            // sound.setStatusAsync({ positionMillis: seekValue });
+            // console.log(seekValue);
+            // try {
+            //   await sound.setPositionAsync(seekValue);
+            // } catch (error) {
+            //   Alert.alert(
+            //     "Seekbar error",
+            //     "set position is not working properly"
+            //   );
+            // }
             playSound();
           }}
         />
