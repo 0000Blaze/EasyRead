@@ -72,8 +72,8 @@ export default function App() {
       console.log("loading Sound");
       const { sound, apple } = await Audio.Sound.createAsync(
         {
-          uri: "https://easy-read-server.onrender.com/wav",
-          // uri: "https://c305-2400-1a00-b010-5505-b69b-c0e7-c1bf-b298.in.ngrok.io/wav",
+          // uri: "https://easy-read-server.onrender.com/wav",
+          uri: "https://ada3-103-5-150-3.in.ngrok.io/wav",
         },
         {
           // androidImplementation: "MediaPlayer",
@@ -93,10 +93,8 @@ export default function App() {
         [],
         { cancelable: false }
       );
-      fetch("https://easy-read-server.onrender.com/SendImage", {
-        // fetch(
-        //   "https://c305-2400-1a00-b010-5505-b69b-c0e7-c1bf-b298.in.ngrok.io/SendImage",
-        // {
+      // fetch("https://easy-read-server.onrender.com/SendImage", {
+      fetch("https://ada3-103-5-150-3.in.ngrok.io/SendImage", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -248,15 +246,15 @@ export default function App() {
             if (sound === undefined) return;
             setSeekValue(Math.floor(value * soundParameters.durationMillis));
             // sound.setStatusAsync({ positionMillis: seekValue });
-            // console.log(seekValue);
-            // try {
-            //   await sound.setPositionAsync(seekValue);
-            // } catch (error) {
-            //   Alert.alert(
-            //     "Seekbar error",
-            //     "set position is not working properly"
-            //   );
-            // }
+            console.log(seekValue);
+            try {
+              await sound.setPositionAsync(seekValue);
+            } catch (error) {
+              Alert.alert(
+                "Seekbar error",
+                "set position is not working properly"
+              );
+            }
             playSound();
           }}
         />

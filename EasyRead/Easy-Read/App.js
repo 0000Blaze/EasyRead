@@ -20,7 +20,7 @@ export default function App() {
   const [hasCameraPermission, setHasCameraPermission] = useState(null);
   const [capturedPhoto, setCapturedPhoto] = useState(null);
   const [open, setopen] = useState(false);
-  const [hasSoundPermission, setHasSoundPermission] = useState();
+  const [hasSoundPermission, setHasSoundPermission] = useState(null);
   const [photo, setPhoto] = useState();
   const [serverRply, setServerRply] = useState();
   const [encodedImage, setEncodedImage] = useState();
@@ -34,6 +34,7 @@ export default function App() {
       const { status } = await Camera.requestCameraPermissionsAsync();
       const soundPermission = await Audio.requestPermissionsAsync();
       setHasCameraPermission(status === "granted");
+      // console.log(soundPermission);
       setHasSoundPermission(soundPermission.status === "granted");
     })();
   }, []);
@@ -73,13 +74,13 @@ export default function App() {
       const { sound, apple } = await Audio.Sound.createAsync(
         {
           // uri: "https://easy-read-server.onrender.com/wav",
-          uri: "https://acc3-2400-1a00-b010-e258-890a-c5a7-f31e-13af.in.ngrok.io/wav",
+          uri: "https://9d27-2400-1a00-b010-e258-a591-7e31-a6eb-64d7.in.ngrok.io/wav",
         },
         {
           // androidImplementation: "MediaPlayer",
           shouldPlay: false,
         },
-        (apple) => console.log(apple)
+        (apple) => setSoundParameters(apple)
       );
       setSound(sound);
     }
@@ -94,7 +95,7 @@ export default function App() {
       );
       // fetch("https://easy-read-server.onrender.com/SendImage", {
       fetch(
-        "https://acc3-2400-1a00-b010-e258-890a-c5a7-f31e-13af.in.ngrok.io/SendImage",
+        "https://9d27-2400-1a00-b010-e258-a591-7e31-a6eb-64d7.in.ngrok.io/SendImage",
         {
           method: "POST",
           headers: {
@@ -172,8 +173,8 @@ export default function App() {
       // console.log("Playing Sound");
       await sound.playAsync();
       setStatusSound(true);
-      // if (soundParameters.positionMillis === soundParameters.durationMillis)
-      //   sound.replayAsync();
+      if (soundParameters.positionMillis === soundParameters.durationMillis)
+        sound.replayAsync();
     }
 
     let pauseSound = () => {
