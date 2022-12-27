@@ -3,57 +3,21 @@ import {
   Text,
   View,
   SafeAreaView,
-  Image,
   TouchableOpacity,
-  Modal,
-  Alert,
 } from "react-native";
-import Slider from "@react-native-community/slider";
 import React, { useEffect, useRef, useState } from "react";
 import { FontAwesome } from "expo-vector-icons";
 import { Camera } from "expo-camera";
-import { Audio } from "expo-av";
+import Photo from "./components/photo";
+import AudioCard from "./components/audio";
 
-export default function App() {
+export default App = () => {
+  const url = "https://fba4-116-90-225-82.in.ngrok.io";
   const cameraRef = useRef(null);
-  const [type, settype] = useState(Camera.Constants.Type.back);
-  const [hasCameraPermission, setHasCameraPermission] = useState(null);
-  const [capturedPhoto, setCapturedPhoto] = useState(null);
-  const [open, setopen] = useState(false);
-  const [hasSoundPermission, setHasSoundPermission] = useState(null);
-  const [photo, setPhoto] = useState();
-  const [serverRply, setServerRply] = useState();
-  const [encodedImage, setEncodedImage] = useState();
-  const [sound, setSound] = useState();
-  const [statusSound, setStatusSound] = useState(false);
-  const [soundParameters, setSoundParameters] = useState();
-  const [seekValue, setSeekValue] = useState(0);
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      const soundPermission = await Audio.requestPermissionsAsync();
-      setHasCameraPermission(status === "granted");
-      // console.log(soundPermission);
-      setHasSoundPermission(soundPermission.status === "granted");
-    })();
-  }, []);
-
-  if (hasCameraPermission === undefined || hasSoundPermission === undefined) {
-    return <Text>Requesting permission...</Text>;
-  } else if (!hasCameraPermission) {
-    return (
-      <Text>
-        Permission for Camera not granted.Please change this in settings
-      </Text>
-    );
-  } else if (!hasSoundPermission) {
-    return (
-      <Text>
-        Permission for Sound not granted.Please change this in settings
-      </Text>
-    );
-  }
+  const [camPermission, setCamPermission] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [photoData, setPhotoData] = useState(null);
+  const [fetchResponse, setFetchResponse] = useState(false);
 
   async function takePicture() {
     let options = {
@@ -61,251 +25,71 @@ export default function App() {
       base64: true,
       exif: false,
     };
-    let data = await cameraRef.current.takePictureAsync(options);
-    setCapturedPhoto(data["uri"]);
-    setopen(true);
-    setPhoto(data);
-    setEncodedImage(data["base64"]);
+    let data = await cameraRef.current?.takePictureAsync(options);
+    setPhotoData(data);
+    setOpenModal(true);
   }
 
-  if (photo) {
-    async function soundLoad() {
-      console.log("loading Sound");
-      const { sound, apple } = await Audio.Sound.createAsync(
-        {
-          // uri: "https://easy-read-server.onrender.com/wav",
-          uri: "https://9d27-2400-1a00-b010-e258-a591-7e31-a6eb-64d7.in.ngrok.io/wav",
-        },
-        {
-          // androidImplementation: "MediaPlayer",
-          shouldPlay: false,
-        },
-        (apple) => setSoundParameters(apple)
-      );
-      setSound(sound);
-    }
-
-    let postJsonData = () => {
-      console.log("Loading ...");
-      Alert.alert(
-        "Loading...",
-        "Image being sent to server and waiting for response",
-        [],
-        { cancelable: false }
-      );
-      // fetch("https://easy-read-server.onrender.com/SendImage", {
-      fetch(
-        "https://9d27-2400-1a00-b010-e258-a591-7e31-a6eb-64d7.in.ngrok.io/SendImage",
-        {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            userId: "Rohan",
-            image: encodedImage,
-          }),
-        }
-      )
-        .then((response) => response.json())
-        .then((responseJson) => {
-          setEncodedImage(undefined);
-          setServerRply(responseJson);
-          soundLoad();
-          Alert.alert("Succesful", "Reply from server succesful");
-        })
-        .catch((error) => {
-          console.error(error);
-          Alert.alert("Error occured", "Server error , please try again");
-        })
-        .finally(() => setPhoto(undefined));
-    };
-
-    return (
-      <SafeAreaView style={styles.container}>
-        {capturedPhoto && (
-          <Modal animationType="slide" transparent={false} visible={open}>
-            <View
-              style={{
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                margin: 20,
-              }}
-            >
-              <Image
-                style={{ width: "100%", height: 500, borderRadius: 20 }}
-                source={{ uri: "data:image/jpg;base64," + photo.base64 }}
-              />
-              <View style={{ margin: 10, flexDirection: "row" }}>
-                <TouchableOpacity
-                  style={{ margin: 10 }}
-                  onPress={() => {
-                    setopen(false);
-                    setPhoto(undefined);
-                  }}
-                >
-                  <FontAwesome name="window-close" size={50} color="FF0000" />
-                </TouchableOpacity>
-
-                <TouchableOpacity style={{ margin: 10 }} onPress={postJsonData}>
-                  <FontAwesome name="upload" size={50} color="121212" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          </Modal>
-        )}
-      </SafeAreaView>
-    );
-  }
-
-  if (serverRply) {
-    let goBack = () => {
-      setServerRply(undefined);
-      setopen(false);
-      setSound(undefined);
-      setStatusSound(false);
-      sound.unloadAsync();
-    };
-
-    async function playSound() {
-      // console.log("Playing Sound");
-      await sound.playAsync();
-      setStatusSound(true);
-      if (soundParameters.positionMillis === soundParameters.durationMillis)
-        sound.replayAsync();
-    }
-
-    let pauseSound = () => {
-      // console.log("Pause Sound");
-      sound.pauseAsync();
-      setStatusSound(false);
-    };
-
-    let calculateSeekbarValue = () => {
-      if (sound === undefined) {
-        console.log("No Sound");
-        return 0;
-      }
-      // console.log(
-      //   soundParameters.positionMillis / soundParameters.durationMillis
-      // );
-      return soundParameters.positionMillis / soundParameters.durationMillis;
-    };
-
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-          }}
-        >
-          <Text
-            style={{
-              marginLeft: 10,
-            }}
-          >
-            {Math.floor(soundParameters.positionMillis / 1000 / 3600)}:
-            {Math.floor(soundParameters.positionMillis / 1000 / 60)}:
-            {Math.floor((soundParameters.positionMillis / 1000) % 60)}
-          </Text>
-          <Text
-            style={{
-              marginLeft: 250,
-            }}
-          >
-            {Math.floor(soundParameters.durationMillis / 1000 / 3600)}:
-            {Math.floor(soundParameters.durationMillis / 1000 / 60)}:
-            {Math.floor((soundParameters.durationMillis / 1000) % 60)}
-          </Text>
-        </View>
-        <Slider
-          style={{ width: 350, height: 40 }}
-          minimumValue={0}
-          maximumValue={1}
-          value={calculateSeekbarValue()}
-          minimumTrackTintColor="#0000FF"
-          maximumTrackTintColor="#000000"
-          // onValueChange={() => {
-          //   calculateSeekbarValue();
-          // }}
-          onSlidingStart={() => {
-            if (!sound.isPlaying) return;
-            try {
-              pauseSound();
-              // console.log(soundParameters);
-            } catch (err) {
-              console.log(err);
-              Alert.alert("Audio seekbar error", "Try again");
-            }
-          }}
-          onSlidingComplete={async (value) => {
-            if (sound === undefined) return;
-            setSeekValue(Math.floor(value * soundParameters.durationMillis));
-
-            // sound.setStatusAsync({ positionMillis: seekValue });
-            console.log("seek Value:", seekValue);
-            // console.log(soundParameters);
-            console.log("duration:", sound.playableDurationMillis);
-            console.log("position:", sound.positionMillis);
-            // try {
-            //   await sound.setPositionAsync(seekValue);
-            // } catch (error) {
-            //   Alert.alert(
-            //     "Seekbar error",
-            //     "set position is not working properly"
-            //   );
-            // }
-
-            playSound();
-          }}
-        />
-        <TouchableOpacity
-          style={styles.audioButton}
-          onPress={statusSound === false ? playSound : pauseSound}
-        >
-          {statusSound === false ? (
-            <FontAwesome name="play" size={35} color="#FFFF" />
-          ) : (
-            <FontAwesome name="pause" size={35} color="#FFFF" />
-          )}
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.audioButton}
-          title="Back"
-          onPress={goBack}
-        >
-          <FontAwesome name="arrow-left" size={35} color="#FFFF" />
-        </TouchableOpacity>
-      </View>
-    );
-  }
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      //   console.log(status);
+      if (status === "granted") setCamPermission(true);
+    })();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
-      <Camera style={{ flex: 0.75 }} type={type} ref={cameraRef}>
-        <View
-          style={{
-            flex: 1,
-            backgroundColor: "transparent",
-            flexDirection: "row",
-          }}
-        ></View>
-      </Camera>
+      {camPermission ? (
+        <>
+          {openModal ? (
+            <>
+              {fetchResponse ? (
+                <AudioCard
+                  url={url}
+                  setFetchResponse={setFetchResponse}
+                  setOpenModal={setOpenModal}
+                />
+              ) : (
+                <Photo
+                  photo={photoData}
+                  openModal={openModal}
+                  setOpenModal={setOpenModal}
+                  url={url}
+                  setFetchResponse={setFetchResponse}
+                />
+              )}
+            </>
+          ) : (
+            <>
+              <Camera
+                style={{ flex: 0.75 }}
+                type={Camera.Constants.Type.back}
+                ref={cameraRef}
+              >
+                <View
+                  style={{
+                    flex: 1,
+                    backgroundColor: "transparent",
+                    flexDirection: "row",
+                  }}
+                ></View>
+              </Camera>
 
-      <TouchableOpacity style={styles.button} onPress={takePicture}>
-        <FontAwesome name="camera" size={23} color="#fff" />
-      </TouchableOpacity>
+              <TouchableOpacity style={styles.button} onPress={takePicture}>
+                <FontAwesome name="camera" size={23} color="#fff" />
+              </TouchableOpacity>
+            </>
+          )}
+        </>
+      ) : (
+        <Text>
+          Permission for Camera not granted.Please change this in settings
+        </Text>
+      )}
     </SafeAreaView>
   );
-}
-
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -324,6 +108,9 @@ const styles = StyleSheet.create({
     margin: 20,
     borderRadius: 10,
     height: 50,
+  },
+  slider: {
+    width: "70%",
   },
   audioButton: {
     justifyContent: "center",
