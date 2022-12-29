@@ -10,14 +10,41 @@ import { FontAwesome } from "expo-vector-icons";
 import { Camera } from "expo-camera";
 import Photo from "./components/photo";
 import AudioCard from "./components/audio";
+import { string } from "prop-types";
 
 export default App = () => {
-  const url = "https://fba4-116-90-225-82.in.ngrok.io";
+  const ngrokUrl = "https://api.ngrok.com/endpoints";
+  global.url;
+  getUrl();
   const cameraRef = useRef(null);
   const [camPermission, setCamPermission] = useState(false);
   const [openModal, setOpenModal] = useState(false);
   const [photoData, setPhotoData] = useState(null);
   const [fetchResponse, setFetchResponse] = useState(false);
+
+  async function getUrl() {
+    await fetch(ngrokUrl, {
+      method: "GET",
+      headers: {
+        authorization:
+          "Bearer 2JZLWcErsvzGXobqaymGTcCxA82_7cGJ6tTFRNN8SkNQrweKL",
+        "ngrok-version": "2",
+      },
+    })
+      .then((response) => response.json())
+      .then((response) => {
+        // console.log(response["endpoints"][0]["public_url"]);
+        let link = response["endpoints"][0]["public_url"];
+        // console.log("IN", link);
+        global.url = link;
+        // console.log(typeof link);
+        // return link;
+      })
+      .catch((err) => {
+        console.error(err);
+        return;
+      });
+  }
 
   async function takePicture() {
     let options = {
@@ -28,6 +55,7 @@ export default App = () => {
     let data = await cameraRef.current?.takePictureAsync(options);
     setPhotoData(data);
     setOpenModal(true);
+    // console.log("picture", global.url);
   }
 
   useEffect(() => {
@@ -46,7 +74,7 @@ export default App = () => {
             <>
               {fetchResponse ? (
                 <AudioCard
-                  url={url}
+                  url={global.url}
                   setFetchResponse={setFetchResponse}
                   setOpenModal={setOpenModal}
                 />
@@ -55,7 +83,7 @@ export default App = () => {
                   photo={photoData}
                   openModal={openModal}
                   setOpenModal={setOpenModal}
-                  url={url}
+                  url={global.url}
                   setFetchResponse={setFetchResponse}
                 />
               )}
