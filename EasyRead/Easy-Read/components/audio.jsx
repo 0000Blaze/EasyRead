@@ -3,6 +3,7 @@ import Slider from "@react-native-community/slider";
 import React, { useEffect, useRef, useState } from "react";
 import { FontAwesome } from "expo-vector-icons";
 import { Audio } from "expo-av";
+import * as FileSystem from "expo-file-system";
 
 export const AudioCard = ({ url, setFetchResponse, setOpenModal }) => {
   const [seekTime, setSeekTime] = useState(0);
@@ -11,7 +12,27 @@ export const AudioCard = ({ url, setFetchResponse, setOpenModal }) => {
   const audio = useRef(null);
   const [audioIcon, setAudioIcon] = useState("play");
 
-  async function playAudio(audiouri = `${url}/mpeg`) {
+  global.localUri;
+
+  async function downloadAudio(
+    audioUrl = `${url}/mpeg`,
+    filename = "temp-file"
+  ) {
+    const downloadResumable = FileSystem.createDownloadResumable(
+      audioUrl,
+      FileSystem.cacheDirectory + filename
+    );
+
+    try {
+      const { uri } = await downloadResumable.downloadAsync();
+      console.log("Download complete:", uri);
+      return uri;
+    } catch (e) {
+      console.error("Error downloading audio:", e);
+    }
+  }
+
+  async function playAudio(audioUrl = `${url}/mpeg`) {
     if (audio.current !== null) {
       if (audioIcon === "pause") {
         setAudioIcon("play");
@@ -23,8 +44,11 @@ export const AudioCard = ({ url, setFetchResponse, setOpenModal }) => {
     } else {
       try {
         setIsRequesting(true);
+        localUri = await downloadAudio();
+        console.log(localUri);
         const { sound } = await Audio.Sound.createAsync({
-          uri: audiouri,
+          // uri: audioUrl,
+          uri: localUri,
         });
         audio.current = sound;
         audio.current.setOnPlaybackStatusUpdate((status) => {
@@ -63,13 +87,6 @@ export const AudioCard = ({ url, setFetchResponse, setOpenModal }) => {
 
   return (
     <View style={styles.container}>
-      <Text
-        style={{
-          marginLeft: 10,
-        }}
-      >
-        Seeking may seem lagging due to slow internet connection
-      </Text>
       <Text></Text>
       <Text
         style={{

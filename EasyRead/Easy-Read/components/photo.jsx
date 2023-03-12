@@ -9,6 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { FontAwesome } from "expo-vector-icons";
+// import * as FileSystem from "expo-file-system";
 
 export const Photo = ({
   photo,
